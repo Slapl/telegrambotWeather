@@ -1,10 +1,17 @@
 import os
 import telebot
 import requests
-from flask import Flask
+from flask import Flask, request
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY')
+
+if not BOT_TOKEN or not WEATHER_API_KEY:
+    logging.error("Missing BOT_TOKEN or WEATHER_API_KEY environment variables")
+    exit(1)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
@@ -21,6 +28,7 @@ def send_weather(message):
         
         response = requests.get(url)
         data = response.json()
+        
         if data['cod'] == 200:
             weather_info = f"""
 🌍 Город: {data['name']}
@@ -36,18 +44,32 @@ def send_weather(message):
             
     except Exception as e:
         bot.reply_to(message, "⚠️ Произошла ошибка. Попробуйте позже.")
-        print(f"Error: {e}")
+        logging.error(f"Weather error: {e}")
 
 @app.route('/')
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=f"https://{os.environ.get('RAILWAY_STATIC_URL')}.railway.app/" + BOT_TOKEN)
+def index():
     return "Bot is running!", 200
 
-@app.route('/' + BOT_TOKEN, methods=['POST'])
-def get_message():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
+@app.route('/webhook/' + BOT_TOKEN, methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return ''
+    return 'Bad request', 400
+
+
+@app.before_first_request
+def set_webhook():
+    webhook_url = f"https://{os.environ.get('RAILWAY_STATIC_URL', 'your-app-name')}.railway.app/webhook/{BOT_TOKEN}"
+    try:
+        bot.remove_webhook()
+        bot.set_webhook(url=webhook_url)
+        logging.info(f"Webhook set to: {webhook_url}")
+    except Exception as e:
+        logging.error(f"Webhook setup error: {e}")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
