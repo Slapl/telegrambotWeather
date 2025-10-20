@@ -15,6 +15,20 @@ if not BOT_TOKEN or not WEATHER_API_KEY:
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
+webhook_set = False
+
+@app.before_request
+def set_webhook_once():
+    global webhook_set
+    if not webhook_set:
+        try:
+            webhook_url = f"https://{os.environ.get('RAILWAY_STATIC_URL', 'your-app-name')}.railway.app/webhook/{BOT_TOKEN}"
+            bot.remove_webhook()
+            bot.set_webhook(url=webhook_url)
+            logging.info(f"Webhook set to: {webhook_url}")
+            webhook_set = True
+        except Exception as e:
+            logging.error(f"Webhook setup error: {e}")
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -46,6 +60,7 @@ def send_weather(message):
         bot.reply_to(message, "⚠️ Произошла ошибка. Попробуйте позже.")
         logging.error(f"Weather error: {e}")
 
+
 @app.route('/')
 def index():
     return "Bot is running!", 200
@@ -58,17 +73,6 @@ def webhook():
         bot.process_new_updates([update])
         return ''
     return 'Bad request', 400
-
-
-@app.before_first_request
-def set_webhook():
-    webhook_url = f"https://{os.environ.get('RAILWAY_STATIC_URL', 'your-app-name')}.railway.app/webhook/{BOT_TOKEN}"
-    try:
-        bot.remove_webhook()
-        bot.set_webhook(url=webhook_url)
-        logging.info(f"Webhook set to: {webhook_url}")
-    except Exception as e:
-        logging.error(f"Webhook setup error: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
