@@ -17,7 +17,7 @@ print(f"WEATHER_API_KEY: {'*' * 10}{WEATHER_API_KEY[-5:] if WEATHER_API_KEY else
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     print(f"📨 Received /start from {message.chat.id}")
-    bot.reply_to(message, "Привет! Я бот погоды. Напиши название города, и я покажу погоду.")
+    bot.reply_to(message, "Привет! Я бот погоды. Напиши название города, чтобы я мог рассказать тебе о погоде .")
 
 @bot.message_handler(func=lambda message: True)
 def send_weather(message):
@@ -83,3 +83,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"🌐 Starting Flask on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)
+
