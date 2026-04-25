@@ -11,7 +11,6 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 app = Flask(__name__)
 
 def get_weather(city):
-    """Запрос погоды — подставь свой API"""
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=ru"
     try:
         response = requests.get(url)
