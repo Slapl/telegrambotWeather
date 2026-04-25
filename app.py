@@ -30,7 +30,7 @@ def get_weather(city):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "Привет! Напиши название города, и я скажу погоду ☀️")
+    bot.reply_to(message, "Привет! Напиши название города, и я скажу погоду")
 
 @bot.message_handler(func=lambda message: True)
 def weather_reply(message):
