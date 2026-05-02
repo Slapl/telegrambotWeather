@@ -1,4 +1,16 @@
-# TelegrambotWeather
-### Простой бот для просмотра погоды в определённом городе. Пишешь город боту, и он даёт информацию о погоде, и как она чувствуется 
-#### Использовал Flask, gunicorn, telebot
-#### Ссылка - https://t.me/cascasascacfsdfkmfdkm_bot
+# Telegram Weather Bot
+
+## Features
+- Fetches real-time weather via OpenWeather API
+- Handles user input asynchronously
+- Supports multiple cities
+- Deployed 24/7 on Render
+
+## Tech Stack
+Python, python-telegram-bot, REST API
+
+## Architecture
+- bot/
+- services/
+- api_client/
+#### https://t.me/cascasascacfsdfkmfdkm_bot
